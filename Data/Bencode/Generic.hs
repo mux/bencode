@@ -17,6 +17,8 @@ import qualified Data.Map as M
 import GHC.Generics
 import Data.Bencode
 
+-- The Bencode format specification allows lists to be heterogenous;
+-- it is not possible to use this interface with those yet.
 class GFromBencode f where
   gfromBencode :: BData -> Maybe (f a)
 
