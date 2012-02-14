@@ -7,6 +7,7 @@ import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as B
 import GHC.Generics
 import System.Environment
+import System.FilePath
 import Data.Bencode
 import Data.Bencode.Generic
 
@@ -34,6 +35,6 @@ main = do
   Just (bdata,_) <- bdecode <$> B.readFile file
   let Just torrent = fromBencode bdata
   forM_ (files (info torrent)) $ \(File pcs size) -> do
-    B.putStr (B.intercalate "/" pcs)
+    B.putStr (B.intercalate (B.singleton pathSeparator) pcs)
     B.putStr " "
     B.putStrLn (B.pack (show size))
