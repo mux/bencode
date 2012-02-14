@@ -2,6 +2,7 @@
 module Data.Bencode
   ( BData(..)
   , bdecode
+  , bdecode_
   ) where
 
 import Control.Monad (guard)
@@ -15,6 +16,9 @@ data BData = BInteger Integer
            | BList [BData]
            | BDict (Map ByteString BData)
   deriving (Eq, Ord, Show)
+
+bdecode_ :: ByteString -> Maybe BData
+bdecode_ bytes = fst `fmap` bdecode bytes
 
 bdecode :: ByteString -> Maybe (BData, ByteString)
 bdecode bytes = guard (not (null bytes)) >> bdecode' bytes
