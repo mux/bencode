@@ -8,6 +8,7 @@
  #-}
 module Data.Bencode.Generic
   ( FromBencode(..)
+  , AccessorMap(..)
   ) where
 
 import Control.Applicative
@@ -20,31 +21,37 @@ import Data.Bencode
 -- The Bencode format specification allows lists to be heterogenous;
 -- it is not possible to use this interface with those yet.
 class GFromBencode f where
-  gfromBencode :: BData -> Maybe (f a)
+  gfromBencode :: (ByteString -> ByteString) -> BData -> Maybe (f a)
 
 instance FromBencode a => GFromBencode (K1 i a) where
-  gfromBencode bdata = K1 <$> fromBencode bdata
+  gfromBencode _ bdata = K1 <$> fromBencode bdata
 
 instance (Selector s, GFromBencode a) => GFromBencode (S1 s a) where
-  gfromBencode (BDict d) = do x <- M.lookup (B.pack key) d
-                              M1 <$> gfromBencode x
-    where key = selName (undefined :: t s a p)
-  gfromBencode _         = Nothing
+  gfromBencode fm (BDict d) = do x <- M.lookup (fm key) d
+                                 M1 <$> gfromBencode fm x
+    where key = B.pack $ selName (undefined :: t s a p)
+  gfromBencode _ _          = Nothing
 
 instance GFromBencode a => GFromBencode (C1 i a) where
-  gfromBencode bdata = M1 <$> gfromBencode bdata
+  gfromBencode fm bdata = M1 <$> gfromBencode fm bdata
 
 instance GFromBencode a => GFromBencode (D1 i a) where
-  gfromBencode bdata = M1 <$> gfromBencode bdata
+  gfromBencode fm bdata = M1 <$> gfromBencode fm bdata
 
 instance (GFromBencode a, GFromBencode b) => GFromBencode (a :*: b) where
-  gfromBencode d = (:*:) <$> gfromBencode d <*> gfromBencode d
+  gfromBencode fm d = (:*:) <$> gfromBencode fm d <*> gfromBencode fm d
+
+newtype AccessorMap a = AM { unWrap :: ByteString -> ByteString }
 
 class FromBencode a where
   fromBencode :: BData -> Maybe a
 
+  accessorMap :: AccessorMap a
+  accessorMap = AM id
+
   default fromBencode :: (Generic a, GFromBencode (Rep a)) => BData -> Maybe a
-  fromBencode bdata = to <$> gfromBencode bdata
+  fromBencode bdata = to <$> gfromBencode trfn bdata
+    where trfn = unWrap (accessorMap :: AccessorMap a)
 
 instance FromBencode Integer where
   fromBencode (BInteger x) = Just x
