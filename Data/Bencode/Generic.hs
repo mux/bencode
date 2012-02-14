@@ -44,7 +44,7 @@ class FromBencode a where
   fromBencode :: BData -> Maybe a
 
   default fromBencode :: (Generic a, GFromBencode (Rep a)) => BData -> Maybe a
-  fromBencode = (to <$>) . gfromBencode
+  fromBencode bdata = to <$> gfromBencode bdata
 
 instance FromBencode Integer where
   fromBencode (BInteger x) = Just x
