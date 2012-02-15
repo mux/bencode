@@ -9,6 +9,7 @@
 module Data.Bencode.Generic
   ( FromBencode(..)
   , AccessorMap(..)
+  , parseBencode
   ) where
 
 import Control.Applicative
@@ -64,3 +65,6 @@ instance FromBencode ByteString where
 instance FromBencode a => FromBencode [a] where
   fromBencode (BList xs) = mapM fromBencode xs
   fromBencode _          = Nothing
+
+parseBencode :: FromBencode a => ByteString -> Maybe a
+parseBencode str = bdecode_ str >>= fromBencode

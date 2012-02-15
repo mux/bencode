@@ -8,7 +8,6 @@ import GHC.Generics
 import System.Environment
 import System.Exit
 import System.FilePath
-import Data.Bencode
 import Data.Bencode.Generic
 
 data Torrent =
@@ -37,7 +36,7 @@ main :: IO ()
 main = do
   (file:_) <- getArgs
   content  <- B.readFile file
-  case bdecode_ content >>= fromBencode of
+  case parseBencode content of
     Nothing      ->
       do B.putStrLn "Cannot parse torrent file"
          exitFailure
