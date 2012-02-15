@@ -27,19 +27,19 @@ instance FromBencode a => GFromBencode (K1 i a) where
   gfromBencode _ bdata = K1 <$> fromBencode bdata
 
 instance (Selector s, GFromBencode a) => GFromBencode (S1 s a) where
-  gfromBencode fm (BDict d) = do x <- M.lookup (fm key) d
-                                 M1 <$> gfromBencode fm x
+  gfromBencode tr (BDict d) = do x <- M.lookup (tr key) d
+                                 M1 <$> gfromBencode tr x
     where key = B.pack $ selName (undefined :: t s a p)
   gfromBencode _ _          = Nothing
 
 instance GFromBencode a => GFromBencode (C1 i a) where
-  gfromBencode fm bdata = M1 <$> gfromBencode fm bdata
+  gfromBencode tr bdata = M1 <$> gfromBencode tr bdata
 
 instance GFromBencode a => GFromBencode (D1 i a) where
-  gfromBencode fm bdata = M1 <$> gfromBencode fm bdata
+  gfromBencode tr bdata = M1 <$> gfromBencode tr bdata
 
 instance (GFromBencode a, GFromBencode b) => GFromBencode (a :*: b) where
-  gfromBencode fm d = (:*:) <$> gfromBencode fm d <*> gfromBencode fm d
+  gfromBencode tr d = (:*:) <$> gfromBencode tr d <*> gfromBencode tr d
 
 newtype AccessorMap a = AM { unWrap :: ByteString -> ByteString }
 
