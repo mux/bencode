@@ -3,6 +3,7 @@ module Main where
 
 import Control.Monad
 import Data.ByteString.Char8 as B
+import Data.Monoid
 import GHC.Generics
 import System.Environment
 import System.Exit
@@ -40,10 +41,10 @@ main = do
       do B.putStrLn "Cannot parse torrent file"
          exitFailure
     Just torrent ->
-      do B.putStrLn $ "Torrent name:\t" `append` (comment torrent)
-         B.putStrLn $ "Announce URL:\t" `append` (announce torrent)
-         B.putStrLn $ "Created by:\t" `append` (createdBy torrent)
+      do B.putStrLn $ "Torrent name:\t" <> (comment torrent)
+         B.putStrLn $ "Announce URL:\t" <> (announce torrent)
+         B.putStrLn $ "Created by:\t" <> (createdBy torrent)
          B.putStrLn ""
          forM_ (files (info torrent)) $ \(File pcs size) -> do
-           B.putStrLn $ intercalate (singleton pathSeparator) pcs
-                          `append` pack (' ':show size)
+           B.putStrLn $ intercalate (singleton pathSeparator) pcs <>
+                          pack (' ':show size)
